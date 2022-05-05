@@ -19,7 +19,7 @@ const mongoClient = new MongoClient(process.env.MONGO_URL);
 const promise = mongoClient.connect();
 promise.then(() => (db = mongoClient.db('mywallet')));
 
-app.post('/sing-up', async (req, res) => {
+app.post('/sign-up', async (req, res) => {
     //name, email, password, passwordConfirm
     const user = req.body;
 
@@ -27,7 +27,7 @@ app.post('/sing-up', async (req, res) => {
         name: joi.string().required(),
         email: joi.string().email({ minDomainSegments: 2 }).required(),
         password: joi.string().required(),
-        passwordConfirm: joi.ref('password').required(),
+        passwordConfirm: joi.ref('password'),
     });
 
     const validation = userSchema.validate(user, { abortEarly: false });
@@ -78,7 +78,7 @@ app.post('/sign-in', async (req, res) => {
             .collection('users')
             .findOne({ email: login.email });
         if (user && bcrypt.compareSync(login.password, user.password)) {
-            const token = uuid.v4();
+            const token = uuid();
             const loginTime = dayjs().format('DD/MM/YYYY HH:mm:ss');
             await db.collection('sessions').insertOne({
                 token,
@@ -153,7 +153,7 @@ app.post('/registers', async (req, res) => {
     try {
         const currentDate = dayjs().format('DD/MM/YYYY');
 
-        await db.collection('register').insertOne({
+        await db.collection('registers').insertOne({
             username: user.name,
             value: value,
             description: description,
