@@ -5,6 +5,8 @@ import { MongoClient } from 'mongodb';
 import chalk from 'chalk';
 import bcrypt from 'bcrypt';
 import joi from 'joi';
+import dayjs from 'dayjs';
+import { stripHtml } from 'string-strip-html';
 
 dotenv.config();
 const app = express();
@@ -80,6 +82,69 @@ app.post('/sign-in', async (req, res) => {
     } catch (e) {
         res.sendStatus(500);
         console.error(chalk.bold.red('Could not post sing-in'), e);
+    }
+});
+
+app.get('/registers', async (req, res) => {
+    let { user } = req.headers;
+    user = stripHtml(user).result.trim();
+
+    try {
+        const registers = await db.collection('registers').find().toArray();
+        const userRegisters = registers.filter(
+            (register) => register.username === user
+        );
+        res.send(userRegisters);
+    } catch (e) {
+        console.error(chalk.bold.red('Could not get registers'), e);
+        res.sendStatus(500);
+    }
+});
+
+app.post('/register', async (req, res) => {
+    //value, description, type
+    let { value, description, type } = req.body;
+    let { user } = req.headers;
+
+    description = stripHtml(description).result.trim();
+    user = stripHtml(user).result.trim();
+
+    const inputSchema = joi.object({
+        value: joi.number().positive(),
+        description: joi.string().required(),
+        type: joi.any().valid('input', 'output'),
+    });
+
+    const validation = inputSchema.validate(
+        { value, description, type },
+        { abortEarly: false }
+    );
+
+    if (validation.error) {
+        console.log(validation.error.details);
+        res.sendStatus(422);
+        return;
+    }
+
+    try {
+        const checkUser = await db.collection('users').findOne({ name: user });
+        const currentDate = dayjs().format('DD/MM/YYYY');
+        if (!checkUser) {
+            res.sendStatus(422);
+            return;
+        }
+
+        await db.collection('register').insertOne({
+            username: user,
+            value: value,
+            description: description,
+            date: currentDate,
+            type: type,
+        });
+        res.sendStatus(201);
+    } catch (e) {
+        console.error(chalk.bold.red('Could not post register'), e);
+        res.sendStatus(500);
     }
 });
 
