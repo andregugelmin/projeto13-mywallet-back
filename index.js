@@ -7,6 +7,7 @@ import bcrypt from 'bcrypt';
 import joi from 'joi';
 import dayjs from 'dayjs';
 import { stripHtml } from 'string-strip-html';
+import { v4 as uuid } from 'uuid';
 
 dotenv.config();
 const app = express();
@@ -77,7 +78,15 @@ app.post('/sign-in', async (req, res) => {
             .collection('users')
             .findOne({ email: login.email });
         if (user && bcrypt.compareSync(login.password, user.password)) {
-            res.send(user);
+            const token = uuid.v4();
+            const loginTime = dayjs().format('DD/MM/YYYY HH:mm:ss');
+            await db.collection('sessions').insertOne({
+                token,
+                userId: user._id,
+                date: loginTime,
+            });
+
+            res.send(token);
         } else res.sendStatus(404);
     } catch (e) {
         res.sendStatus(500);
@@ -86,13 +95,20 @@ app.post('/sign-in', async (req, res) => {
 });
 
 app.get('/registers', async (req, res) => {
-    let { user } = req.headers;
-    user = stripHtml(user).result.trim();
+    const { authorization } = req.headers;
+    if (!authorization) return res.sendStatus(401);
+
+    const token = authorization?.replace('Bearer', '').trim();
+
+    const session = await db.collection('sessions').findOne({ token });
+    if (!session) return res.sendStatus(401);
+
+    const user = await db.collection('users').findOne({ _id: session.userId });
 
     try {
         const registers = await db.collection('registers').find().toArray();
         const userRegisters = registers.filter(
-            (register) => register.username === user
+            (register) => register.username === user.name
         );
         res.send(userRegisters);
     } catch (e) {
@@ -101,13 +117,21 @@ app.get('/registers', async (req, res) => {
     }
 });
 
-app.post('/register', async (req, res) => {
+app.post('/registers', async (req, res) => {
     //value, description, type
     let { value, description, type } = req.body;
-    let { user } = req.headers;
+    const { authorization } = req.headers;
+
+    if (!authorization) return res.sendStatus(401);
 
     description = stripHtml(description).result.trim();
-    user = stripHtml(user).result.trim();
+
+    const token = authorization?.replace('Bearer', '').trim();
+
+    const session = await db.collection('sessions').findOne({ token });
+    if (!session) return res.sendStatus(401);
+
+    const user = await db.collection('users').findOne({ _id: session.userId });
 
     const inputSchema = joi.object({
         value: joi.number().positive(),
@@ -127,15 +151,10 @@ app.post('/register', async (req, res) => {
     }
 
     try {
-        const checkUser = await db.collection('users').findOne({ name: user });
         const currentDate = dayjs().format('DD/MM/YYYY');
-        if (!checkUser) {
-            res.sendStatus(422);
-            return;
-        }
 
         await db.collection('register').insertOne({
-            username: user,
+            username: user.name,
             value: value,
             description: description,
             date: currentDate,
