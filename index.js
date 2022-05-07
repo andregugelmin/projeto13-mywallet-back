@@ -11,6 +11,6 @@ app.use(json());
 app.use(authenticationRouter);
 app.use(registersRouter);
 
-app.listen(5000, () => {
-    console.log(chalk.bold.green('Server running'));
+app.listen(process.env.PORT, () => {
+    console.log(chalk.bold.green('Server running on port ' + process.env.PORT));
 });

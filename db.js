@@ -6,7 +6,7 @@ dotenv.config();
 
 let db = null;
 try {
-    const mongoClient = new MongoClient(process.env.MONGO_URL);
+    const mongoClient = new MongoClient(process.env.MONGO_URI);
     await mongoClient.connect();
     db = mongoClient.db('mywallet');
 } catch (e) {
