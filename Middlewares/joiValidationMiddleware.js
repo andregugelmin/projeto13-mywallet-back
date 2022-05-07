@@ -1,6 +1,6 @@
 import joi from 'joi';
 
-export async function singupValidation(req, res, next) {
+export async function signupValidation(req, res, next) {
     const user = req.body;
 
     const userSchema = joi.object({

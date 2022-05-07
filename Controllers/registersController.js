@@ -5,19 +5,14 @@ import dayjs from 'dayjs';
 import db from '../db.js';
 
 export async function getRegisters(req, res) {
-    const token = req.headers.authorization?.replace('Bearer', '').trim();
-
-    const session = await db.collection('sessions').findOne({ token });
-    if (!session) return res.sendStatus(401);
-
-    const user = await db.collection('users').findOne({ _id: session.userId });
+    const user = res.locals.user;
 
     try {
         const registers = await db.collection('registers').find().toArray();
         const userRegisters = registers.filter(
             (register) => register.username === user.name
         );
-        res.send(userRegisters);
+        res.send({ user: user, userRegisters: userRegisters });
     } catch (e) {
         console.error(chalk.bold.red('Could not get registers'), e);
         res.sendStatus(500);
@@ -29,12 +24,7 @@ export async function postRegisters(req, res) {
     let { value, description, type } = req.body;
     description = stripHtml(description).result.trim();
 
-    const token = req.headers.authorization?.replace('Bearer', '').trim();
-
-    const session = await db.collection('sessions').findOne({ token });
-    if (!session) return res.sendStatus(401);
-
-    const user = await db.collection('users').findOne({ _id: session.userId });
+    const user = res.locals.user;
 
     const inputSchema = joi.object({
         value: joi.number().positive(),

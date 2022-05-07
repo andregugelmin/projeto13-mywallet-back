@@ -5,20 +5,13 @@ import dayjs from 'dayjs';
 import { v4 as uuid } from 'uuid';
 
 export async function singup(req, res) {
-    //name, email, password, passwordConfirm
-    const user = req.body;
+    //name, email, password
+    const user = res.locals.user;
     try {
-        const checkUser = await db
-            .collection('user')
-            .findOne({ email: user.email });
-        if (checkUser)
-            return res.status(409).send('email is already registered');
-
-        const passwordHash = bcrypt.hashSync(user.password, 10);
         await db.collection('users').insertOne({
             name: user.name,
             email: user.email,
-            password: passwordHash,
+            password: user.password,
         });
         res.sendStatus(201);
     } catch (e) {
@@ -43,7 +36,7 @@ export async function singin(req, res) {
                 date: loginTime,
             });
 
-            res.send(token);
+            res.send({ token });
         } else res.sendStatus(404);
     } catch (e) {
         res.sendStatus(500);
