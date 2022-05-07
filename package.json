@@ -13,8 +13,8 @@
     },
     "type": "module",
     "scripts": {
-        "start": "node ./index.js",
-        "dev": "nodemon ./index.js"
+        "start": "node index.js",
+        "dev": "nodemon index.js"
     },
     "devDependencies": {
         "eslint": "^8.14.0",
