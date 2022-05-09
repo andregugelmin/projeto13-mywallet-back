@@ -27,7 +27,7 @@ export async function postTransaction(req, res) {
     try {
         const currentDate = dayjs().format('DD/MM/YYYY');
 
-        await db.collection('transaction').insertOne({
+        await db.collection('transactions').insertOne({
             username: user.name,
             value: transaction.value,
             description: transaction.description,
