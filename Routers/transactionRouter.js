@@ -1,19 +1,19 @@
 import { Router } from 'express';
 import { validTokenHeader } from '../Middlewares/tokenHeaderMiddleware.js';
 import {
-    gettransactions,
-    posttransactions,
+    getTransactions,
+    postTransactions,
 } from '../Controllers/transactionsController.js';
 import { transactionValidation } from '../Middlewares/joiValidationMiddleware.js';
 
 const transactionsRouter = Router();
 
-transactionsRouter.get('/transactions', validTokenHeader, gettransactions);
+transactionsRouter.get('/transactions', validTokenHeader, getTransactions);
 transactionsRouter.post(
     '/transactions',
     validTokenHeader,
     transactionValidation,
-    posttransactions
+    postTransactions
 );
 
 export default transactionsRouter;
