@@ -10,10 +10,10 @@ export async function getTransactions(req, res) {
             .collection('transactions')
             .find()
             .toArray();
-        const usertransactions = transactions.filter(
+        const userTransaction = transactions.filter(
             (transaction) => transaction.username === user.name
         );
-        res.send({ user: user, usertransactions: usertransactions });
+        res.send({ user: user, userTransaction: userTransaction });
     } catch (e) {
         console.error(chalk.bold.red('Could not get transactions'), e);
         res.sendStatus(500);
