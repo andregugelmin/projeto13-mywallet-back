@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { validTokenHeader } from '../Middlewares/tokenHeaderMiddleware.js';
 import {
     getTransactions,
-    postTransactions,
+    postTransaction,
 } from '../Controllers/transactionsController.js';
 import { transactionValidation } from '../Middlewares/joiValidationMiddleware.js';
 
@@ -13,7 +13,7 @@ transactionsRouter.post(
     '/transactions',
     validTokenHeader,
     transactionValidation,
-    postTransactions
+    postTransaction
 );
 
 export default transactionsRouter;

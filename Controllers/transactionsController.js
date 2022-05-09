@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import dayjs from 'dayjs';
 import db from '../db.js';
 
-export async function getTransaction(req, res) {
+export async function getTransactions(req, res) {
     const user = res.locals.user;
 
     try {
