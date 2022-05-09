@@ -35,7 +35,7 @@ export async function singin(req, res) {
             });
 
             res.send({ token });
-        } else res.sendStatus(404);
+        } else res.status(404).send({ message: 'Wrong user or password' });
     } catch (e) {
         res.sendStatus(500);
         console.error(chalk.bold.red('Could not post sing-in'), e);
