@@ -1,4 +1,5 @@
 import joi from 'joi';
+import { stripHtml } from 'string-strip-html';
 
 export async function signupValidation(req, res, next) {
     const user = req.body;
@@ -14,9 +15,10 @@ export async function signupValidation(req, res, next) {
 
     if (validation.error) {
         console.log(validation.error.details);
-        res.sendStatus(422).send(
-            validation.error.details.map((detail) => detail.message)
-        );
+        res.status(422).send({
+            message: 'Invalid signup input',
+            details: validation.error.details.map((e) => e.message),
+        });
         return;
     }
 
@@ -35,11 +37,44 @@ export async function loginValidation(req, res, next) {
 
     if (validation.error) {
         console.log(validation.error.details);
-        res.sendStatus(422).send(
-            validation.error.details.map((detail) => detail.message)
-        );
+        res.status(422).send({
+            message: 'Invalid login input',
+            details: validation.error.details.map((e) => e.message),
+        });
         return;
     }
 
+    next();
+}
+
+export async function transactionValidation(req, res, next) {
+    let { value, description, type } = req.body;
+    description = stripHtml(description).result.trim();
+
+    const inputSchema = joi.object({
+        value: joi.number().positive(),
+        description: joi.string().required(),
+        type: joi.any().valid('input', 'output'),
+    });
+
+    const validation = inputSchema.validate(
+        { value, description, type },
+        { abortEarly: false }
+    );
+
+    if (validation.error) {
+        console.log(validation.error.details);
+        res.status(422).send({
+            message: 'Invalid transaction input',
+            details: validation.error.details.map((e) => e.message),
+        });
+        return;
+    }
+
+    res.locals.transaction = {
+        value: value,
+        description: description,
+        type: type,
+    };
     next();
 }

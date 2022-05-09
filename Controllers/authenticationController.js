@@ -5,7 +5,6 @@ import dayjs from 'dayjs';
 import { v4 as uuid } from 'uuid';
 
 export async function singup(req, res) {
-    //name, email, password
     const user = res.locals.user;
     try {
         await db.collection('users').insertOne({
@@ -21,7 +20,6 @@ export async function singup(req, res) {
 }
 
 export async function singin(req, res) {
-    //email, password
     const login = req.body;
     try {
         const user = await db

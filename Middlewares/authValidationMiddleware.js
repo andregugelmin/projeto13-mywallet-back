@@ -15,7 +15,7 @@ export async function joiSignupValidation(req, res, next) {
         if (checkUser)
             return res
                 .status(409)
-                .send({ message: 'email is already registered' });
+                .send({ message: 'email is already transactioned' });
 
         res.locals.user = user;
     } catch (e) {
